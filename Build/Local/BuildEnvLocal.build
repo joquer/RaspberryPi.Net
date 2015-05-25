@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="BuildEnvLocal"
+         default="None" >
+
+  <!-- Any of the Build Environment properties can be overridden here for project specific values.
+       Or new project properties can be defined.  -->
+	   
+  <property name="solutionFileName"
+            value="${workspace.dir}\RaspberryPiDotNet.sln"/>
+
+</project>

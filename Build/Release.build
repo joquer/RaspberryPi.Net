@@ -1,0 +1,38 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="ReleaseBuild" 
+         default="Compile">
+
+  <property name="buildType"
+            value="QA" />
+
+  <include buildfile="BuildEnv.build" />
+
+  <if test ="${isBambooBuild == 'true'}" >
+    <echo message="Bamboo build, adding git remote ${gitRemoteNamme} to push changes" />
+    <exec program="git"
+          failonerror="false"
+          workingdir="${workspace.dir}" >
+      <arg value="remote" />
+      <arg value="add" />
+      <arg value="${gitRemoteNamme}" />
+      <arg value="${gitURL}" />
+    </exec>
+  </if>
+
+  <include buildfile="CompileTargets.build" />
+  <include buildfile="Local/LocalTargets.build" />
+  <include buildfile="NuGet.build" />
+
+  <target name="CleanAll"
+          depends="Clean" >
+    <delete dir="${artifacts.dir}" />
+  </target>
+
+  <target name="Clean"
+          depends="CleanCompile">
+    <delete dir="${staging.dir}" />
+    <call target="CleanLocal" />
+  </target>
+  
+</project>

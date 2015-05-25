@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<project name="ReleaseLabels">
+  
+  <!-- The base version of your product.  This needs to be a 3 digit version.  THe Build Number will be appended to this
+       to form a 4 digit version number.  -->
+  <property name="release"
+            value="1.0.0"
+            overwrite="false" />
+
+  <!--  The name of your product.  This is used to determine file locations and project names by default.  If your product
+        does not follow standard naming conventions, the properties from BuildEnv.build can be overridden in BuildEnvLocal.build.  -->
+  <property name="productName"
+            value="RaspberryPi.GPIO" />
+  
+  <!-- This is the value if BUILD_NUMBER environment is not set.
+       This will be used when pushing Beta versions for publish
+       it will be set in the environment by Jenkins. -->
+  <property name="buildNumber"
+            value="1"
+            unless="${property::exists('buildNumber')}" />
+
+  <!-- For local builds using CI.build.  The Beta tag will be appended to the version number
+       so that beta versions can be posted to the nuget server from the command line.  -->
+  <property name="betaTag"
+            value="Beta01"/>
+
+  <!-- If your Unit Tests require a test database, set this to true.  A database will be created
+       with a name unique to the build to avoid conflicts with parallel builds.  The connection string
+       will be set in the file BuildStaging\TestDatabaseConnection.xml.  This file is created during the
+       build process.  You can read this directly or use the UnitTestsDatabaseHelper class that is included
+       as part of the nuget package.  -->
+  <property name="useTestDatabase"
+            value="false" />
+
+  <!-- Set this to true if you want nuget to read only the nuspec file when packaging.
+  
+       NuGet can read either a csproj file or the nuspec file when creating a package.  If the csproj file is
+       used, the output of the project will be included in the package and it will also read the nuspec file if it
+       exists and use the settings and files.  This will automatically include the output assemblies, references
+       and place them under the correct directory based on the .Net Framework.  
+       
+       If just the nuspec file is used, the csproj file is ignored, so all
+       files have to be explicitly added, including assemblies.  This is useful for delivering command line utilities
+       and such that provide assembly references.  -->
+  <property name="useNuSpecFile"
+            value="false" />
+
+  <property name="useNuGetCop"
+            value="false" />
+
+  <property name="useCustomUnitTests"
+            value="false" />
+  
+</project>

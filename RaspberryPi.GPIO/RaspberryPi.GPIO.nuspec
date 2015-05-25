@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>RaspberryPi.GPIO</title>
+    <authors>Michael Glasgow</authors>
+    <owners>Michael Glasgow</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description></description>
+    <releaseNotes></releaseNotes>
+    <copyright>Csopyright 2015</copyright>
+    <tags>Raspberry Pi GPIO</tags>
+  </metadata>
+</package>

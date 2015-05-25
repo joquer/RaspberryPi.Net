@@ -1,0 +1,161 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="CompileTargets" 
+         default="None">
+
+  <include buildfile="BuildEnv.build" />
+
+  <target name="UpdateAssemblyInfo">
+    <echo message="Generating assembly info" />
+
+    <asminfo output="${assemblyInfoFile}"
+             language="CSharp">
+      <imports>
+        <import namespace="System.Reflection" />
+        <import namespace="System.Runtime.CompilerServices" />
+        <import namespace="System.Runtime.InteropServices" />
+      </imports>
+      <attributes>
+        <attribute type="AssemblyProductAttribute"
+                   value="${productName}" />
+        <attribute type="AssemblyConfigurationAttribute"
+                   value="${buildConfiguration}" />
+        <attribute type="AssemblyInformationalVersionAttribute"
+                   value="${release}.${buildNumber}" />
+        <attribute type="AssemblyCompanyAttribute"
+                   value="Advisory Board Company - Crimson" />
+        <attribute type="AssemblyCopyrightAttribute"
+                   value="Copyright ©  ${datetime::get-year(datetime::now())} - Advisory Board Company - Crimson" />
+        <attribute type="AssemblyVersionAttribute"
+                   value="${release}.${buildNumber}" />
+        <attribute type="AssemblyFileVersionAttribute"
+                   value="${release}.${buildNumber}" />
+      </attributes>
+    </asminfo>
+  </target>
+
+  <target name="FinalizeAssemblyInfoChanges">
+    <if test="${buildType == 'Dev'}">
+      <exec program="git"
+            workingdir="${workspace.dir}"
+            failonerror="false" >
+        <arg value="checkout" />
+        <arg value="--" />
+        <arg value="${workspace.dir}\Build\${assemblyInfoFile}" />
+      </exec>
+    </if>
+    <if test="${buildType == 'QA'}">
+      <echo message="QA build, Saving Assembly Info changes" />
+      <if test="${isLocalBuild != 'true'}">
+        <echo message="Jenkins Build, Pushing to Stash" />
+        <exec program="git"
+              workingdir="${workspace.dir}" >
+          <arg value="add" />
+          <arg value="${workspace.dir}\Build\${assemblyInfoFile}" />
+        </exec>
+        <exec program="git"
+              workingdir="${workspace.dir}" >
+          <arg value="commit" />
+          <arg value="${workspace.dir}\Build\${assemblyInfoFile}" />
+          <arg value="-m" />
+          <arg value="Release Build updated Common Assembly Info" />
+        </exec>
+        <exec program="git"
+              workingdir="${workspace.dir}" >
+          <arg value="push" />
+          <arg value="${gitRemoteNamme}" />
+          <arg value="${fullBranchName}" />
+        </exec>
+      </if>
+    </if>
+  </target>
+
+  <target name="TagBuild">
+    <echo message="Tagging branch ${fullBranchName} with tag ${release}.${buildNumber}" />
+    <exec program="git"
+          workingdir="${workspace.dir}" >
+      <arg value="tag" />
+      <arg value="-a" />
+      <arg value="${release}.${buildNumber}" />
+      <arg value="-m" />
+      <arg value="${release} - Build ${buildNumber} - ${datetime::now()}" />
+    </exec>
+    <exec program="git"
+          workingdir="${workspace.dir}" >
+      <arg value="push" />
+      <arg value="${gitRemoteNamme}" />
+      <arg value="${release}.${buildNumber}" />
+    </exec>
+  </target>
+
+  <target name="Compile" depends="UpdateAssemblyInfo, PreCompileLocal">
+    <echo message="Build ${solutionFileName}..." />
+    <exec program="${msbuild.exe}"
+          workingdir="${workspace.dir}" >
+      <arg value="/t:Build" />
+      <arg value="/p:Configuration=${buildConfiguration}" />
+      <arg value="${solutionFileName}" />
+      <arg value="/verbosity:quiet" />
+<!--  This is causing problems for SHFB.  It tries to build the help project at the same time it builds the assemblies.
+      <arg value="/maxcpucount:4" />
+-->
+      <arg value="/nologo" />
+    </exec>
+    <call target="PostCompileLocal" />
+    <call target="FinalizeAssemblyInfoChanges" />
+    <if test="${buildType == 'QA'}" >
+      <if test="${directory::exists(helpproject.dir)}" >
+        <copy todir="${artifacts.dir}/Help"
+              failonerror="false">
+          <fileset basedir="${helpproject.dir}/Help" >
+            <include name="**" />
+          </fileset>
+        </copy>
+      </if>
+    </if>
+  </target>
+
+  <target name="CleanCompile">
+    <exec program="${msbuild.exe}"
+          workingdir="${workspace.dir}" >
+      <arg value="${solutionFileName}" />
+      <arg value="/p:Configuration=${buildConfiguration}" />
+      <arg value="/target:Clean" />
+      <arg value="/verbosity:quiet" />
+      <arg value="/nologo" />
+    </exec>
+  </target>
+
+  <target name="RunFxCop"
+          if="${file::exists(fxCopProjectFileName)}" >
+    <xmlpeek file="${nuget.dir}/packages.config"
+           xpath="/packages/package[@id = 'FxCop']/@version"
+           property="packageVersion" />
+    <property name="fxcop.dir"
+              value="packages\FxCop.${packageVersion}" />
+    <property name="fxcopcmd.exe"
+              value="${fxcop.dir}\FxCopCmd.exe" />
+
+    <setenv name="PATH" value="${environment::get-variable('PATH')};${fxcop.dir}" />
+    <loadtasks assembly="${workspace.dir}\${nant.dir}\nantcontrib\bin\NAnt.Contrib.Tasks.dll"/>
+    <fxcop projectFile="${fxCopProjectFileName}"
+           applyOutXsl="true"
+           directOutputToConsole="true" >
+    </fxcop>
+  </target>
+
+  <target name="RunNuGetCop"
+          if="${useNuGetCop == 'true'}">
+    <xmlpeek file="${nuget.dir}/packages.config"
+           xpath="/packages/package[@id = 'Crimson.Tools.NuGetCop']/@version"
+           property="packageVersion" />
+    <property name="nugetcop.dir"
+              value="packages\Crimson.Tools.NuGetCop.${packageVersion}" />
+    <property name="nugetcopcmd.exe"
+              value="${nugetcop.dir}\NuGetCopCmd.exe" />
+    <exec program="${nugetcopcmd.exe}">
+      <arg value="${solutionFileName}" />
+    </exec>
+  </target>
+
+</project>

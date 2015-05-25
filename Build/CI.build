@@ -1,0 +1,122 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.892/nant.xsd" name="CPMAutomatedTesting" default="RunUnitTestsGUI">
+
+  <property name="buildType" value="Dev" />
+
+  <include buildfile="BuildEnv.build" />
+  <include buildfile="CompileTargets.build" />
+  <include buildfile="Local/LocalTargets.build" />
+  <include buildfile="NuGet.build" />
+  <include buildfile="TestDatabase.build" />
+
+  <property name="version"
+            value="${version}-${betaTag}" />
+
+  <xmlpeek file="${nuget.dir}/packages.config"
+           xpath="/packages/package[@id = 'OpenCover']/@version"
+           property="packageVersion" />
+  <property name="opencover.dir"
+            value="${workspace.dir}\packages\OpenCover.${packageVersion}" />
+  <property name="opencover.exe"
+            value="${opencover.dir}\OpenCover.Console.exe" />
+
+  <xmlpeek file="${nuget.dir}/packages.config"
+           xpath="/packages/package[@id = 'NUnit.Runners']/@version"
+           property="packageVersion" />
+  <property name="nunit.runners.dir"
+            value="${workspace.dir}\packages\NUnit.Runners.${packageVersion}\tools" />
+  <property name="nunitConsole.exe"
+            value="${nunit.runners.dir}\nunit-console.exe" />
+  <property name="nunitGUI.exe"
+            value="${nunit.runners.dir}\nunit.exe" />
+
+  <target name="CleanAll"
+          depends="Clean" >
+    <delete dir="${artifacts.dir}" />
+    <delete dir="${test.output.dir}" />
+  </target>
+
+  <!-- Clean everything.  Both Debug and Release, plus get rid of all nuget files and build artifacts -->
+  <target name="Clean"
+          depends="CleanCompile" >
+    <delete dir="${staging.dir}" />
+    <call target="CleanLocal" />
+  </target>
+
+  <!-- Target to invoke the NUNit GUI and run the NUnit configuration file automatically -->
+  <target name="RunUnitTestsGUI" depends="Compile, RunFxCop, RunNuGetCop">
+    <mkdir dir="${test.output.dir}" />
+    <if test="${useTestDatabase == 'true'}" >
+      <call target="UpdateDatabaseConnection" />
+      <call target="CreateDatabase" />
+      <call target="MigrateSchema" />
+    </if>
+    <exec program="${nunitGUI.exe}"
+          if="${useCustomUnitTests == 'false'}">
+      <arg value="${nunit.tests.project}" />
+      <arg value="/run" />
+    </exec>
+    <call target="CustomUnitTestsGUI"
+          if="${useCustomUnitTests == 'true'}" />
+  </target>
+
+  <!-- Target to invoke the NUNit console and run the NUnit configuration file automatically -->
+  <target name="RunUnitTests"
+          depends="Compile, RunFxCop, RunNuGetCop" >
+    <mkdir dir="${test.output.dir}"
+           failonerror="false" />
+    <if test="${useTestDatabase == 'true'}" >
+      <call target="UpdateDatabaseConnection" />
+      <call target="CreateDatabase" />
+      <call target="MigrateSchema" />
+    </if>
+    <exec program="${nunitConsole.exe}"
+          if="${useCustomUnitTests == 'false'}">
+      <arg value="${nunit.tests.project}" />
+      <arg value="/framework:net-4.0" />
+      <arg value="/noshadow" />
+      <arg value="/result:${unitTestsResultsFileName}" />
+    </exec>
+    <call target="CustomUnitTests"
+          if="${useCustomUnitTests == 'true'}" />
+  </target>
+
+  <target name="RunCodeCoverage"
+          depends="Compile">
+
+    <mkdir dir="${test.output.dir}"
+           failonerror="false" />
+    <if test="${useTestDatabase == 'true'}" >
+      <call target="UpdateDatabaseConnection" />
+      <call target="CreateDatabase" />
+      <call target="MigrateSchema" />
+    </if>
+    <exec program="${opencover.exe}"
+          workingdir="${workspace.dir}"
+          verbose="true">
+      <arg value="-register:user" />
+      <arg value="-target:${nunitConsole.exe}" />
+      <arg value="-targetargs:${nunit.tests.project} /framework:net-4.0 /noshadow /result:${unitTestsResultsFileName}" />
+      <arg value="-filter:+[${productName}*]*" />
+      <arg value="-mergebyhash" />
+      <arg value="-output:${coverageReportFileName}" />
+    </exec>
+  </target>
+
+  <!--Build success message-->
+  <target name="BuildSuccess" >
+    <echo message="${productName} Build Completed Successfully" failonerror="false"/>
+    <if test="${useTestDatabase == 'true'}" >
+      <call target="DeleteDatabase" />
+    </if>
+  </target>
+
+  <!--Build failure message-->
+  <target name="BuildFailure">
+    <if test="${useTestDatabase == 'true'}" >
+      <call target="DeleteDatabase" />
+    </if>
+    <echo message="${productName} Build or Unit Tests FAILED." failonerror="false"/>
+  </target>
+
+</project>

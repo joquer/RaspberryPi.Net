@@ -1,0 +1,13 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="PublishLocal"
+         default="None" >
+
+  <target name="PackageLocal" >
+  </target>
+
+  <target name="PublishLocal" >
+  </target>
+
+</project>
+  

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <!-- Need to specify this, but symbol server needs updating.
+    minClientVersion="2.8">
+    -->
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>CMGA CSV Parsing Library</title>
+    <authors>CMGA Team</authors>
+    <owners>CMGA</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>CPM.CSV contains the CSV parsing code used throughout the CPM application.</description>
+    <releaseNotes>This is a unified importer for CSV files.  There were two versions of this code
+		in the CPM solution.  The interfaces have been changed to use IoC and reduce dependencies.
+	  The Schema Aware importer has been changed.  It now manages the files and the user now
+	  only has to update the data rows and headers one at a time.
+	    Updated to .Net 4.5.</releaseNotes>
+    <copyright>Csopyright 2014</copyright>
+    <tags>CPM CSV CPM.CSV</tags>
+  </metadata>
+ </package>

@@ -6,3 +6,7 @@ obj
 TestResults
 
 RaspberryPiDotNet.suo
+
+packages/*
+project.lock.json
+

@@ -1,0 +1,60 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="None">
+
+  <!-- The unit tests read the database.config.file to get the connection string.  This inserts the connection
+       with the database name unique for this build into into that file.  -->
+  <target name="UpdateDatabaseConnection">
+    <copy file="${build.dir}\${database.config.file}"
+          todir="${staging.dir}" />
+    <xmlpoke file="${staging.dir}\${database.config.file}"
+             xpath="/TestDatabaseConnection/ConnectionString/@value"
+             value="${db.connection.string}" />
+  </target>
+
+  <target name="CreateDatabase">
+    <echo message="Creating database [${db.server}].[${db.name}]..." />
+    <exec program="sqlcmd"
+          workingdir="${workspace.dir}" >
+      <arg value="-S" />
+      <arg value="${db.server}" />
+      <arg value="-E" />
+      <arg value="-b" />
+      <arg value="-i" />
+      <arg value="${create_db.sql}" />
+      <arg value="-v" />
+      <arg value="dbname=${db.name}" />
+    </exec>
+  </target>
+
+  <target name="DeleteDatabase">
+    <echo message="Deleting database [${db.server}].[${db.name}]..." />
+    <exec program="sqlcmd"
+          workingdir="${workspace.dir}" >
+      <arg value="-S" />
+      <arg value="${db.server}" />
+      <arg value="-E" />
+      <arg value="-b" />
+      <arg value="-i" />
+      <arg value="${delete_db.sql}" />
+      <arg value="-v" />
+      <arg value="dbname=&quot;${db.name}&quot;" />
+    </exec>
+  </target>
+
+  <!--migrate schema of db-->
+  <target name="MigrateSchema">
+    <echo message="Migrating schema for [${db.server}].[${db.name}]" />
+    <exec program="${schemautil.exe}"
+          verbose="true"
+          workingdir="${workspace.dir}"
+          timeout="600000">
+      <arg value="/server:${db.server}" />
+      <arg value="/database:${db.name}" />
+      <arg value="/action:migrate" />
+      <arg value="/scriptsFolder:${app.schema}" />
+      <arg value="/y:+" />
+    </exec>
+  </target>
+
+</project>
