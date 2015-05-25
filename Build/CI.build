@@ -1,0 +1,227 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.85/nant.xsd" name="CPMAutomatedTesting" default="ExecuteNUnitTestsOnGUI">
+
+  <!--Include section -->
+  <include buildfile="ReleaseLabels.build"
+           failonerror="true" />
+
+	<property name="productName"
+						value="CPM.Tools" />
+
+	<property name="buildConfiguration"
+            value="Debug" />
+  
+  <property name="solution.dir"
+            overwrite="false"
+            value="${directory::get-parent-directory( project::get-base-directory() ) }" />
+
+  <property name="solutionFileName"
+            value="${solution.dir}\${productName}.sln"/>
+
+  <loadtasks assembly="${solution.dir}\packages\nant.0.92.2\nantcontrib\bin\NAnt.Contrib.Tasks.dll"/>
+
+  <property name="nuget.package.dir"
+            value="${solution.dir}\packages"/>
+
+    <!-- FxCop Path Resolution-->
+  <property name="tools.fxcop.dir"
+            value=""/>
+  <if test="${not property::exists('setFxCopPath')}">
+    <setenv name="PATH"
+                    value="${environment::get-variable('PATH')};${tools.fxcop.dir}" />
+    <property name="setFxCopPath"
+                        value="true" />
+  </if>
+
+  <property name="buildName"
+            value="${productName}0"
+            unless="${property::exists('buildName')}" />
+  <property name="buildNumber"
+            value="0"
+            unless="${property::exists('buildNumber')}" />
+
+  <property name="fxcopcmd.exe"
+            value="" />
+  <foreach item="File"
+           property="iterator.file">
+    <in>
+      <items>
+        <include name="${nuget.package.dir}\**\FxCopCmd.exe" />
+      </items>
+    </in>
+    <do>
+      <property name="fxcopcmd.exe"
+                value="${iterator.file}"
+                if="${string::get-length(fxcopcmd.exe) == 0}" />
+    </do>
+  </foreach>
+  <property name="tools.fxcop.dir"
+            value="${path::get-directory-name(path::get-full-path(fxcopcmd.exe))}"/>
+
+  <if test="${property::exists('setFxCopPath')}">
+    <setenv name="PATH"
+            value="${environment::get-variable('PATH')};${tools.fxcop.dir}" />
+    <property name="setFxCopPath"
+              value="true" />
+  </if>
+
+  <property name="nunit.tests.project" overwrite="false" value="${solution.dir}/Build/NUnitTestConfiguration.nunit" />
+  <property name="dot.net.version" overwrite="false" value="v4.0.30319" />
+  <property name="msbuild.exe" overwrite="false" value="c:/Windows/Microsoft.NET/Framework/${dot.net.version}/msbuild.exe" />
+  <property name="nant.onsuccess" overwrite="false" value="BuildSuccess" />
+  <property name="nant.onfailure" overwrite="false" value="BuildFailure" />
+
+  <property name="release" overwrite="false" value="2013.04" />
+
+  <!-- Path to NCover related ones -->
+  <property name="ncoverResultsDirectory" value="${solution.dir}\NCoverResults" />
+  <property name="nunitResultsDirectory" value="${solution.dir}\NunitResults" />
+  <property name="ncoverSummaryDirectory" value="${solution.dir}\NCoverResults\summary" />
+  <property name="ncoverConsole.exe" overwrite="false" value="C:\Program Files\NCover\NCover.Console.exe"/>
+  <property name="ncoverReporting.exe" overwrite="false" value="C:\Program Files\NCover\NCover.Reporting.exe"/>
+
+  <property name="nunitConsole.exe"
+            value="" />
+  <foreach item="File"
+           property="iterator.file">
+    <in>
+      <items>
+        <include name="${nuget.package.dir}\**\tools\nunit-console.exe" />
+      </items>
+    </in>
+    <do>
+      <property name="nunitConsole.exe"
+                value="${iterator.file}"
+                if="${string::get-length(nunitConsole.exe) == 0}" />
+    </do>
+  </foreach>
+
+  <property name="nunitGUI.exe"
+            overwrite="false"
+            value="" />
+  <foreach item="File"
+           property="iterator.file">
+    <in>
+      <items>
+        <include name="${nuget.package.dir}\**\nunit.exe" />
+      </items>
+    </in>
+    <do>
+      <property name="nunitGUI.exe"
+                value="${iterator.file}"
+                if="${string::get-length(nunitGUI.exe) == 0}" />
+    </do>
+  </foreach>
+
+  <!-- Builds the PracticeManagement using MSBuild.exe -->
+  <target name="Build">
+    <exec program="${msbuild.exe}">
+      <arg line="${solutionFileName}" />
+      <arg line="/verbosity:m" />
+      <arg line="/nologo" />
+    </exec>
+  </target>
+
+  <target name="Clean">
+    <echo message="Cleaning ${solutionFileName}..." />
+    <exec program="${msbuild.exe}" workingdir="${solution.dir}" verbose="true" commandline="/t:Clean /p:Configuration=${buildConfiguration} ${solutionFileName} /verbosity:quiet /nologo" failonerror="true"/>
+  </target>  
+
+  <!-- Target to invoke the NUNit GUI and run the NUnit configuration file automatically -->
+  <target name="ExecuteNUnitTestsOnGUI" depends="Build, RunFxCop">
+    <exec program="${nunitGUI.exe}" commandline="&quot;${nunit.tests.project}&quot; /run" failonerror="true" />
+  </target>
+
+  <!-- Target to invoke the NUNit console and run the NUnit configuration file automatically -->
+  <target name="ExecuteNUnitTestsOnConsole" depends="Build, RunFxCop">
+    <exec program="${nunitConsole.exe}" commandline="&quot;${nunit.tests.project}&quot;" failonerror="true" />
+    <call target="Clean" />
+  </target>
+
+  <!-- Target to invoke the NUNit console with NCover and run the NUnit configuration file automatically -->
+  <target name="ExecuteNCoverWithNUnitTestsOnConsole" depends="Build, ExecuteNCoverReportGeneration">
+    <echo message="NCover and NUnit tests execution completed successfully!" failonerror="false"/>
+    <call target="Clean" />
+  </target>
+
+  <!-- Target to perform pre-step to prepare for NCover execution -->
+  <target name="PerformNCoverPreSetup">
+    <property name="ncoverDirectory" value="C:\Program Files\NCover\Build Task Plugins\" />
+    <fail message="NCover is not installed on this machine. Could not load the NCover tasks."
+        if="${not directory::exists(ncoverDirectory)}" />/>
+
+    <echo message="Using NCover from path: ${ncoverDirectory}"/>
+    <loadtasks assembly="${ncoverDirectory}\NCover.NAntTasks.dll" />
+
+    if="${not directory::exists(ncoverResultsDirectory)}" />/>
+    <mkdir dir="${ncoverResultsDirectory}"/>
+    if="${not directory::exists(ncoverResultsDirectory)}" />/>
+    <mkdir dir="${nunitResultsDirectory}"/>
+    if="${directory::exists(ncoverSummaryDirectory)}" />/>
+    <delete dir="${ncoverSummaryDirectory}"/>
+  </target>
+
+  <!-- Target to execute NCover by passing in necessary parameters -->
+  <target name="ExecuteNCover" depends="PerformNCoverPreSetup">
+    <ncover program="${ncoverConsole.exe}"
+        testRunnerExe="${nunitConsole.exe}"
+        testRunnerArgs="${nunit.tests.project} /xml=${nunitResultsDirectory}\TestResult.xml"
+        coverageFile="${ncoverResultsDirectory}\coverage.xml"
+        appendTrendTo="${ncoverResultsDirectory}\coverage.trend"
+        projectName="${productName}"
+        includeAssemblies="CPM.Tools"
+        excludeAttributes="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"
+        excludeMethods=".ToString;.GetHashCode"
+        coverAll="true"
+        logLevel="Verbose"
+        logFile="${ncoverResultsDirectory}\NCover.log"
+        failonerror="true" />
+  </target>
+
+  <!-- Target to invoke the NCover report generation and generate NCover specific reports -->
+  <target name="ExecuteNCoverReportGeneration" depends="ExecuteNCover">
+    <ncoverreporting program="${ncoverReporting.exe}"
+	                  loadTrendPath="${ncoverResultsDirectory}\coverage.trend"
+					  failonerror="true">
+      <coverageDataPaths>
+        <include name="${ncoverResultsDirectory}\coverage.xml" />
+      </coverageDataPaths>
+      <reports>
+        <report format="Html"
+                    outputPath="${ncoverResultsDirectory}\summary\Summary.html"
+                    reportType="Summary" />
+        <report format="Html"
+                    outputPath="${ncoverResultsDirectory}\summary\UncoveredCodeSections.html"
+                    reportType="UncoveredCodeSections" />
+        <report format="Xml"
+                    outputPath="${ncoverResultsDirectory}\Trends.Xml"
+                    reportType="Trends" />
+        <report format="Html"
+                    outputPath="${ncoverResultsDirectory}\summary\FullCoverageReport.html"
+                    reportType="FullCoverageReport" />
+        <report format="Xml"
+                    outputPath="${ncoverResultsDirectory}\SymbolModule.Xml"
+                    reportType="SymbolModule" />
+      </reports>
+    </ncoverreporting>
+  </target>
+
+  <!--Build success message-->
+  <target name="BuildSuccess" >
+    <echo message="${productName} build and unit tests executed successfully" failonerror="false"/>
+  </target>
+
+  <!--Build failure message-->
+  <target name="BuildFailure">
+    <echo message="${productName} build or unit tests failed" failonerror="false"/>
+  </target>
+
+  <target name="RunFxCop" depends="Build">
+    <echo message="${fxcopcmd.exe}"/>
+        <fxcop projectFile="${solution.dir}/${productName}.FxCop"
+                     applyOutXsl="true"
+                     directOutputToConsole="true">
+        </fxcop>
+  </target>
+    
+</project>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0"
+         DefaultTargets="LoadNuGetPackages"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NugetPackagesDirectory>$(MSBuildProjectDirectory)\..\packages</NugetPackagesDirectory>
+    <NuGetExecutable>$(MSBuildProjectDirectory)\..\.nuget\nuget</NuGetExecutable>
+  </PropertyGroup>
+  <ItemGroup>
+    <NuGetSolutionPackages Include="$(MSBuildProjectDirectory)\..\.nuget\packages.config" />
+  </ItemGroup>
+  <Target Name="LoadNuGetPackages">
+    <Message Importance="high"
+             Text="Retrieving nuget packages for build" />
+    <Exec Command='%22$(NuGetExecutable)%22 install %22%(NuGetSolutionPackages.Identity)%22 -o %22$(NugetPackagesDirectory)%22' />
+  </Target>
+</Project>

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<project name="Common">
+	<property name="release"
+				    value="2013.10"
+			      overwrite="false" />
+</project>

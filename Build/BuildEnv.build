@@ -1,0 +1,364 @@
+<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.85/nant.xsd"
+         name="CMGAToolsBuildEnv"
+         default="None">
+
+  <property name="productAbbrev"
+            value="CMGA" />
+  <property name="productAbbrev"
+            value="${environment::get-variable('PRODUCT_ABBREV')}"
+            if="${environment::variable-exists('PRODUCT_ABBREV')}" />
+  <property name="productAbbrev"
+            value="${environment::get-variable('bamboo_PRODUCT_ABBREV')}"
+            if="${environment::variable-exists('bamboo_PRODUCT_ABBREV')}" />
+
+  <property name="productName"
+            value="${productAbbrev}" />
+  <property name="productName"
+            value="CMGACohort"
+            if="${productAbbrev == 'CMGAC'}" />
+  <property name="productName"
+            value="CMGAMeasure"
+            if="${productAbbrev == 'CMGAM'}" />
+
+  <property name="workspace.dir"
+          value="${directory::get-parent-directory( project::get-base-directory() ) }" />
+  <property name="workspace.dir"
+            value="${environment::get-variable('WORKSPACE')}"
+            if="${environment::variable-exists('WORKSPACE')}" />
+  <property name="workspace.dir"
+            value="${environment::get-variable('bamboo_working_directory')}"
+            if="${environment::variable-exists('bamboo_working_directory')}" />
+
+  <property name="deployEnvironment"
+            value="Dev1" />
+  <property name="deployEnvironment"
+            value="${environment::get-variable('DEPLOY_ENVIRONMENT')}"
+            if="${environment::variable-exists('DEPLOY_ENVIRONMENT')}" />
+  <property name="deployEnvironment"
+            value="${environment::get-variable('bamboo_DEPLOY_ENVIRONMENT')}"
+            if="${environment::variable-exists('bamboo_DEPLOY_ENVIRONMENT')}" />
+
+  <property name="buildType"
+            value="Dev" />
+  <property name="buildType"
+            value="QA"
+            if="${string::substring(deployEnvironment, 0,2) == 'QA'}" />
+  <property name="buildType"
+            value="${environment::get-variable('BUILD_TYPE')}"
+            if="${environment::variable-exists('BUILD_TYPE')}" />
+
+  <property name="build.out.dir"
+          value="${workspace.dir}/BuildOut" />
+
+  <property name="staging.dir"
+            value="${build.out.dir}/Staging" />
+
+  <property name="artifacts.dir"
+            value="${build.out.dir}/Artifacts" />
+
+  <property name="test.output.dir"
+            value="${build.out.dir}/Tests" />
+
+  <property name="releaseLabel"
+            value="2014.00.00.Dev.Unknown" />
+  <property name="releaseLabel"
+            value="${environment::get-variable('RELEASE_LABEL')}"
+            if="${environment::variable-exists('RELEASE_LABEL')}" />
+  <property name="releaseLabel"
+            value="${environment::get-variable('bamboo_RELEASE_LABEL')}"
+            if="${environment::variable-exists('bamboo_RELEASE_LABEL')}" />
+
+  <property name="releaseBuildNumber"
+            value="0" />
+  <property name="releaseBuildNumber"
+            value="${environment::get-variable('RELEASE_BUILD_NUMBER')}"
+            if="${environment::variable-exists('RELEASE_BUILD_NUMBER')}" />
+  <property name="releaseBuildNumber"
+            value="${environment::get-variable('bamboo_RELEASE_BUILD_NUMBER')}"
+            if="${environment::variable-exists('bamboo_RELEASE_BUILD_NUMBER')}" />
+
+  <property name="siteName"
+            value="CMGA_${releaseLabel}_${releaseBuildNumber}" />
+  <property name="siteName"
+            value="${environment::get-variable('SITE_NAME')}"
+            if="${environment::variable-exists('SITE_NAME')}" />
+  <property name="siteName"
+            value="${environment::get-variable('bamboo_SITE_NAME')}"
+            if="${environment::variable-exists('bamboo_SITE_NAME')}" />
+  <property name="siteName"
+            value="${string::replace(siteName, '.', '_')}" />
+
+
+  <property name="release"
+            value="${string::substring(releaseLabel, 0, 10)}" />
+  <property name="release"
+            value="${environment::get-variable('RELEASE')}"
+            if="${environment::variable-exists('RELEASE')}" />
+
+  <property name="previousRelease"
+            value="2014.00.00" />
+  <property name="previousRelease"
+            value="${environment::get-variable('PREVIOUS_RELEASE')}"
+            if="${environment::variable-exists('PREVIOUS_RELEASE')}" />
+ 
+  <!--  This is added to support passing build parameters between Build and Deployment plans in Bamboo.
+    The build generates an XML file with release labels and version numbers, etc.  If this file exists
+    then the property values are set based on that and the Deploy Script uses these to deploy through SM.
+    -->
+  <property name="artifactMetaDataFile"
+            value="${artifacts.dir}/ArtifactMetaData.xml" />
+  <if test="${not file::exists(artifactMetaDataFile)}">
+    <echo message="Artifact Meta Data from file ${artifactMetaDataFile} not found" />
+  </if>
+  <if test="${file::exists(artifactMetaDataFile)}">
+    <echo message="Loading Artifact Meta Data from file ${artifactMetaDataFile}" />
+
+    <xmlpeek file="${artifactMetaDataFile}"
+               xpath="/ArtifactMetaData/BuildType/@name"
+               property="buildType" />
+
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Product/@name"
+             property="productName" />
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Product/@abbrev"
+             property="productAbbrev" />
+
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Release/@release"
+             property="release" />
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Release/@label"
+             property="releaseLabel" />
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Release/@name"
+             property="releaseName" />
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/Release/@buildNumber"
+             property="releaseBuildNumber" />
+
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/PreviousRelease/@release"
+             property="previousRelease" />
+    <xmlpeek file="${artifactMetaDataFile}"
+             xpath="/ArtifactMetaData/PreviousRelease/@name"
+             property="previousReleaseName" />
+
+    <property name="siteName"
+              value="${environment::get-variable('bamboo_deploy_release')}"
+              if="${environment::variable-exists('bamboo_deploy_release')}" />
+    <property name="siteName"
+              value="${string::replace(siteName, '.', '_')}" />
+  </if>
+
+  <property name="shortPreviousRelease"
+            value="${string::substring(previousRelease, 0, 7)}"
+            if="${property::exists('previousRelease')}" />
+  <property name="shortRelease"
+            value="${string::substring(release, 0, 7)}"
+            if="${property::exists('release')}"/>
+
+  <property name="db.server"
+            value="cpm-dev-db01.devid.local" />
+  <property name="db.server"
+            value="atxcpmwmdb-d03.devid.local"
+            if="${deployEnvironment == 'Dev3'}" />
+  <property name="db.server"
+            value="cpm-qa-db01.devid.local"
+            if="${deployEnvironment == 'QA1'}" />
+  <property name="db.server"
+            value="atxcpmwmdb-q02.devid.local"
+            if="${deployEnvironment == 'QA2'}" />
+
+  <property name="db.server"
+            value="${environment::get-variable('DATABASE_SERVER')}"
+            if="${environment::variable-exists('DATABASE_SERVER')}" />
+
+  <property name="app.server"
+            value="cpm-dev-app01.devid.local" />
+  <property name="app.server"
+            value="atxcpmwapp-d03.devid.local"
+            if="${deployEnvironment == 'Dev3'}" />
+  <property name="app.server"
+            value="cpm-qa-app01.devid.local"
+            if="${deployEnvironment == 'QA1'}" />
+  <property name="app.server"
+            value="cpm-qa-app02.devid.local"
+            if="${deployEnvironment == 'QA2'}" />
+  
+  <property name="app.server"
+            value="${environment::get-variable('WEB_SERVER')}"
+            if="${environment::variable-exists('WEB_SERVER')}" />
+  
+  <property name="siteManager.dir"
+            value="\\cdi-dev-app01.devid.local\BuildArtifacts\${productName}" />
+
+  <property name="databasePrefix"
+            value="CPM_UHS" />
+  <property name="databasePrefix"
+            value="${environment::get-variable('DATABASE_PREFIX')}"
+            if="${environment::variable-exists('DATABASE_PREFIX')}" />
+
+  <property name="db.name"
+            value="${databasePrefix}_${releaseLabel}_${releaseBuildNumber}" />
+  <property name="db.name"
+            value="${environment::get-variable('DATABASE_NAME')}"
+            if="${environment::variable-exists('DATABASE_NAME')}" />
+
+  <property name="dbBackupPath"
+            value="\\nas02.devid.local\backup\CPM\DevDb01" />
+  <property name="dbBackupPath"
+            value="\\nas02.devid.local\backup\QA\QA_DB_Backups\CPM"
+            if="${string::substring(deployEnvironment, 0, 2) == 'QA'}" />
+  <property name="dbBackupPath"
+            value="${environment::get-variable('BACKUP_PATH')}"
+            if="${environment::variable-exists('BACKUP_PATH')}" />
+    
+  <!-- The database server doesn't have permission to write to the nas02 store, so backup to build02 first, then
+       copy to the backup share -->
+  <property name="sqlServerDefaultBackupPath"
+            value="\\cpm-dev-build02.devid.local\pub\QA\backup" />
+
+  <property name="dbDataFilePath"
+            value="d:\MSSQL\Data" />
+  <property name="dbDataFilePath"
+            value="e:\MSSQL\Data"
+            if="${deployEnvironment == 'Dev3'}" />
+  <property name="dbDataFilePath"
+            value="f:\MSSQL\Data"
+            if="${deployEnvironment == 'QA1'}" />
+  <property name="dbDataFilePath"
+            value="C:\Program Files\Microsoft SQL Server\MSSQL10_50.MSSQLSERVER\MSSQL\DATA"
+            if="${deployEnvironment == 'QA2'}" />
+  
+  <property name="dbDataFilePath"
+            value="${environment::get-variable('DATABASE_DATA_PATH')}"
+            if="${environment::variable-exists('DATABASE_DATA_PATH')}" />
+
+  <property name="db.backupName"
+            dynamic="true"
+            value="CPM_UHS_2014.07" />
+  <property name="db.backupName"
+            dynamic="true"
+            value="${databasePrefix}_${shortPreviousRelease}"
+            if="${property::exists('shortPreviousRelease')}" />
+  <property name="db.backupName"
+            dynamic="true"
+            value="${environment::get-variable('BACKUP_NAME')}"
+            if="${environment::variable-exists('BACKUP_NAME')}" />
+
+  <property name="dataloaderOptions"
+            value="/c:- /slx:+" />
+  <property name="dataloaderOptions"
+            value="${environment::get-variable('DATALOADER_OPTIONS')}"
+            if="${environment::variable-exists('DATALOADER_OPTIONS')}" />
+
+  <property name="release.dir"
+            dynamic="true"
+            value="${siteManager.dir}\${releaseLabel}\${releaseBuildNumber}" />
+
+  <property name="serviceArtifactPath"
+            dynamic="true"
+            value="${release.dir}\${productName}_ServicesArtifact_${releaseLabel}_${releaseBuildNumber}.zip" />
+
+  <property name="build.dir"
+            value="${workspace.dir}\BuildDir" />
+  
+  <property name="siteManagerUrl"
+            value="net.tcp://cdi-dev-app01.devid.local/SiteManager${buildType}/WcfServices" />
+
+  <property name="yggdrasilServiceUrl"
+            value="net.tcp://cdi-dev-app01.devid.local:14265/CrimsonYggdrasil${buildType}" />
+
+  <target name="LoadArtifactMetaData" />
+
+  <target name="DisplayDeploySummary"
+            depends="LoadArtifactMetaData" >
+
+      <echo message="Deployment Details..." />
+    <echo message="  Build Type         : ${buildType}" />
+    <echo message="  Deploy Environment : ${deployEnvironment}" />
+    <echo message="  Release Label      : ${releaseLabel}" />
+    <echo message="  Build Build Number : ${releaseBuildNumber}" />
+    <echo message="  Release            : ${release}" />
+    <echo message="  Previous Release   : ${previousRelease}" />
+    <echo message="  Site Name          : ${siteName}" />
+    <echo message="  App Server         : ${app.server}" />
+    <echo message="  Database Server    : ${db.server}" />
+    <echo message="  Database Name      : ${db.name}" />
+    <echo message="  Database Path      : ${dbDataFilePath}" />
+    <echo message="  Backup Name        : ${db.backupName}" />
+    <echo message="  Backup Path        : ${dbBackupPath}" />
+    <echo message="  DataLoader Options : ${dataloaderOptions}" />
+
+    <echo message=""/>
+    <echo message="  Site URL           : http://${app.server}/${siteName}" />
+    <echo message=""/>
+  </target>
+
+  <target name="DisplayDatabaseValues"
+          depends="LoadArtifactMetaData" >
+    <echo message="Creating database for release ${releaseLabel} Build ${releaseBuildNumber}..." />
+    <echo message="  Build Type         : ${buildType}" />
+    <echo message="  Deploy Environment : ${deployEnvironment}" />
+    <echo message="  DataLoader Options : ${dataloaderOptions}" />
+    <echo message="  Server             : ${db.server}" />
+    <echo message="  Database           : ${db.name}" />
+    <echo message="  Data File Path     : ${dbDataFilePath}" />
+    <echo message="  Backup Name        : ${db.backupName}" />
+    <echo message="  Backup Path        : ${dbBackupPath}" />
+	<echo message="  Database Prefix    : ${databasePrefix}" />
+  </target>
+
+  <target name="DisplayValues"
+          depends="LoadArtifactMetaData" >
+    <echo message="Build Values..." />
+    <echo message="  Deploy Environment : ${deployEnvironment}" />
+    <echo message="  Release Label      : ${releaseLabel}" />
+    <echo message="  Release Build No.  : ${releaseBuildNumber}" />
+    <echo message="  Release Path       : ${release.dir}" />
+    <echo message="  Database           : [${db.server}].[${db.name}]" />
+    <echo message="  Backup Name        : ${db.backupName}" />
+    <echo message="  DataLoader Options : ${dataloaderOptions}" />
+    <echo message="  Site URL           : https://${app.server}/${siteName}" />
+    <echo message="  Service Artifact   : ${serviceArtifactPath}" />
+	<echo message="  Database Prefix    : ${databasePrefix}" />
+  </target>
+
+  <!-- GenerateProperties creates a Java style properties file with contents
+     of some of the environment variables.  This is used by the email template
+     not all environment variables are available to that plugin for some reason.
+     Also, some of the values are calculated based on the environment.
+     Any environment information that will be included has
+     to be exported then it is pulled into the environment as par-->
+
+
+  <property name="propertyFileName"
+            value="${build.dir}\build.properties" />
+  <target name="GenerateBuildProperties"
+          depends="LoadArtifactMetaData" >
+
+    <echo message="Generating property file ${propertyFileName}" />
+
+    <mkdir dir="${build.dir}" />
+
+    <echo file="${propertyFileName}"
+          append="false" >
+      RELEASE_LABEL = ${releaseLabel}
+      RELEASE_BUILD_NUMBER = ${releaseBuildNumber}
+      SITE_NAME = ${siteName}
+      DEPLOY_ENVIRONMENT = ${deployEnvironment}
+      BUILD_TYPE = ${buildType}
+      DATABASE_SERVER=${db.server}
+      APP_SERVER=${app.server}
+      DATABASE_NAME=${db.name}
+      DATALOADER_OPTIONS=${dataloaderOptions}
+      BACKUP_NAME = ${db.backupName}
+      DATABASE_BACKUP_PATH = ${dbBackupPath}
+    </echo>
+  </target>
+
+  <target name="None">
+  </target>
+</project>

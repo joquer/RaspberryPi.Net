@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="BuiltUtilsBuild"
+         default="None">
+
+  <include buildfile="BuildEnv.build" />
+
+
+  <property name="releaseLabel"
+            value="2014.13.00.next-release" />
+
+  <property name="releaseBuildNumber"
+            value="340" />
+
+  <target name="CopyArtifactToMaster">
+    <property name="versionLabelPart"
+              value="${string::substring(releaseLabel, 0, 10)}" />
+    <property name="newReleaseLabel"
+              value="${versionLabelPart}.master" />
+    
+    <property name="source.artifact.dir"
+              value="${siteManager.dir}\${releaseLabel}\${releaseBuildNumber}" />
+    <property name="dest.artifact.dir"
+              value="${siteManager.dir}\${newReleaseLabel}\${releaseBuildNumber}" />
+
+    <property name="source.web.artifact"
+              value="CMGA_${releaseLabel}_${releaseBuildNumber}.zip" />
+    <property name="dest.web.artifact"
+              value="CMGA_${newReleaseLabel}_${releaseBuildNumber}.zip" />
+
+    <property name="source.services.artifact"
+              value="CMGA_ServicesArtifact_${releaseLabel}_${releaseBuildNumber}.zip" />
+    <property name="dest.services.artifact"
+              value="CMGA_ServicesArtifact_${newReleaseLabel}_${releaseBuildNumber}.zip" />
+
+    <copy file="${source.artifact.dir}\${source.web.artifact}"
+          tofile="${dest.artifact.dir}\${dest.web.artifact}" />
+    <copy file="${source.artifact.dir}\${source.services.artifact}"
+          tofile="${dest.artifact.dir}\${dest.services.artifact}" />
+    <copy file="${source.artifact.dir}\ArtifactMetaData.xml"
+          todir="${dest.artifact.dir}" />
+
+  </target>
+
+  <target name="Clean">
+    <delete dir="${build.dir}"
+            failonerror="false" />
+  </target>
+  
+  <target name="PromoteBuildArtifact">
+    <exec program="powershell"
+        failonerror="false"
+          workingdir="${workspace.dir}">
+      <arg value="Build/PromoteArtifact.ps1" />
+      <arg value="-ServiceUrl" />
+      <arg value="${yggdrasilServiceUrl}" />
+      <arg value="-BuildType" />
+      <arg value="${buildType}" />
+      <arg value="-Release" />
+      <arg value="${releaseLabel}" />
+      <arg value="-BuildNumber" />
+      <arg value="${buildNumber}" />
+    </exec>
+  </target>
+
+  <target name="CopyArtifactToMasterAndPromote">
+
+    <property name="versionLabelPart"
+              value="${string::substring(releaseLabel, 0, 10)}" />
+    <property name="newReleaseLabel"
+              value="${versionLabelPart}.master-test" />
+
+    <property name="source.artifact.dir"
+              value="${siteManager.dir}\${releaseLabel}\${releaseBuildNumber}" />
+    <property name="dest.artifact.dir"
+              value="${siteManager.dir}\${newReleaseLabel}\${releaseBuildNumber}" />
+
+    <property name="source.web.artifact"
+              value="CMGA_${releaseLabel}_${releaseBuildNumber}.zip" />
+    <property name="dest.web.artifact"
+              value="CMGA_${newReleaseLabel}_${releaseBuildNumber}.zip" />
+
+    <property name="source.services.artifact"
+              value="CMGA_ServicesArtifact_${releaseLabel}_${releaseBuildNumber}.zip" />
+    <property name="dest.services.artifact"
+              value="CMGA_ServicesArtifact_${newReleaseLabel}_${releaseBuildNumber}.zip" />
+
+    <copy file="${source.artifact.dir}\${source.web.artifact}"
+          tofile="${dest.artifact.dir}\${dest.web.artifact}" />
+    <copy file="${source.artifact.dir}\${source.services.artifact}"
+          tofile="${dest.artifact.dir}\${dest.services.artifact}" />
+    <copy file="${source.artifact.dir}\ArtifactMetaData.xml"
+          todir="${dest.artifact.dir}" />
+
+    <property name="releaseLabel"
+              value="${newReleaseLabel}" />
+    <call target="PromoteBuildArtifact" />
+  </target>
+
+</project>
