@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>RaspberryPi.DotNet</id>
+    <version>1.0.0</version>
+    <authors />
+    <owners />
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description />
+    <dependencies>
+      <group targetFramework="DNX4.5.1">
+        <dependency id="System.IO" version="4.0.10-beta-22816" />
+        <dependency id="Microsoft.CodeAnalysis.Common" version="1.0.0-rc2" />
+        <dependency id="System.Threading.Thread" version="4.0.0-beta-22816" />
+        <dependency id="DevOps.Build.Framework.NuGet" version="1.1.1" />
+      </group>
+      <group targetFramework="DNXCore5.0">
+        <dependency id="System.IO" version="4.0.10-beta-22816" />
+        <dependency id="Microsoft.CodeAnalysis.Common" version="1.0.0-rc2" />
+        <dependency id="System.Threading.Thread" version="4.0.0-beta-22816" />
+        <dependency id="DevOps.Build.Framework.NuGet" version="1.1.1" />
+        <dependency id="System.Diagnostics.Debug" version="4.0.10-beta-22816" />
+        <dependency id="System.Threading" version="4.0.0-beta-22416" />
+        <dependency id="System.IO.FileSystem" version="4.0.0-beta-22816" />
+        <dependency id="System.Collections" version="4.0.10-beta-22816" />
+        <dependency id="System.Console" version="4.0.0-beta-22816" />
+        <dependency id="System.Linq" version="4.0.0-beta-22816" />
+        <dependency id="Microsoft.CSharp" version="4.0.0-beta-22816" />
+        <dependency id="System.Runtime.Extensions" version="4.0.10-beta-22816" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="mscorlib" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="System" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework="DNX4.5.1" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="DNX4.5.1" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

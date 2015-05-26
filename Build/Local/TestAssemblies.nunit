@@ -1,0 +1,6 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Debug" domainUsage="Multiple" processModel="Default" />
+  <Config name="Debug" binpathtype="Auto">
+    <assembly path="..\..\Crimson.MyNuGet.Tests\bin\Debug\Crimson.MyNuGet.Tests.dll" />
+  </Config>
+</NUnitProject>

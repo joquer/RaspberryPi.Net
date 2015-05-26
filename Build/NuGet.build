@@ -1,0 +1,83 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="NuGetBuild"
+         default="None">
+
+  <include buildfile="BuildEnv.build" />
+  <include buildfile="Local/NuGetLocal.build" />
+
+  <target name="CreatePackage">
+    <mkdir dir="${artifacts.dir}"
+           failonerror="false" />
+    <property name="packageNuSpecFile"
+              value="${packageName}.csproj" />
+    <property name="packageNuSpecFile"
+              value="${packageName}.nuspec"
+              if="${useNuSpecFile == 'true'}" />
+    <exec program="${nuget.exe}"
+          workingdir="${workspace.dir}/${packageName}">
+      <arg value="pack" />
+      <arg value="${packageNuSpecFile}" />
+      <arg value="-Symbols" />
+      <arg value="-Version" />
+      <arg value="${version}" />
+      <arg value="-Prop" />
+      <arg value="Configuration=${buildConfiguration}" />
+      <arg value="-Verbosity" />
+      <arg value="detailed" />
+      <arg value="-OutputDirectory" />
+      <arg value="${artifacts.dir}" />
+    </exec>
+  </target>
+
+  <target name="Package"
+          depends="Compile">
+
+    <mkdir dir="${artifacts.dir}"
+           failonerror="false" />
+
+    <property name="packageName"
+              value="${productName}" />
+    <call target="CreatePackage" />
+
+    <call target="PackageLocal" />
+
+  </target>
+
+  
+  <target name="PublishPackage">
+       <exec program="${nuget.exe}"
+             verbose="true"
+          workingdir="${artifacts.dir}">
+      <arg value="push"/>
+      <arg value="${packageName}.${version}.nupkg" />
+      <arg value="${publisherId}"
+           if="${string::get-length(publisherId) > 0}" />
+      <arg value="-Source" />
+      <arg value="${NugetServerURL}" />
+      <arg value="-Verbosity" />
+      <arg value="detailed" />
+    </exec>
+    <exec program="${nuget.exe}"
+          workingdir="${artifacts.dir}">
+      <arg value="push"/>
+      <arg value="${packageName}.${version}.symbols.nupkg" />
+      <arg value="${publisherId}"/>
+      <arg value="-Source" />
+      <arg value="${SymbolServerURL}" />
+      <arg value="-Verbosity" />
+      <arg value="detailed" />
+    </exec>
+  </target>
+
+  <target name="Publish"
+          depends="Package" >
+
+    <property name="packageName"
+              value="${productName}" />
+    <call target="PublishPackage" />
+    <call target="PublishLocal" />
+
+  </target>
+
+</project>

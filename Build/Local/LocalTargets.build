@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<project xmlns="http://nant.sf.net/release/0.92/nant.xsd"
+         name="LocalTargets" 
+         default="None">
+
+  <target name="PreCompileLocal" />
+
+  <target name="PostCompileLocal" />
+
+  <target name="CleanLocal" />
+
+  <!-- To use a different unit test framework or to customize the unit test step,
+       set useCustomUnitTests to true in ReleaseLabels.build and implement the CustomUnitTests target -->
+  <target name="CustomUnitTests" />
+
+  <target name="CustomUnitTestsGUI" />
+
+</project>

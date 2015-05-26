@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RaspberryPi.DotNet", "RaspberryPi.DotNet\RaspberryPi.DotNet.xproj", "{9CCF4597-FEEF-468C-B9D9-45983E9238AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{C208D28A-DF6B-4F08-A7A3-C43189484A74}"
+	ProjectSection(SolutionItems) = preProject
+		Build\BuildEnv.build = Build\BuildEnv.build
+		Build\CI.build = Build\CI.build
+		Build\CommonAssemblyInfo.cs = Build\CommonAssemblyInfo.cs
+		Build\CompileTargets.build = Build\CompileTargets.build
+		Build\NuGet.build = Build\NuGet.build
+		Build\packages.config = Build\packages.config
+		Build\Release.build = Build\Release.build
+		Build\TestDatabase.build = Build\TestDatabase.build
+		Build\TestDatabaseConnection.xml = Build\TestDatabaseConnection.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local", "Local", "{B2C19D8F-8EC4-447D-AFA7-A41ED502A861}"
+	ProjectSection(SolutionItems) = preProject
+		Build\Local\BuildEnvLocal.build = Build\Local\BuildEnvLocal.build
+		Build\Local\LocalTargets.build = Build\Local\LocalTargets.build
+		Build\Local\NuGetLocal.build = Build\Local\NuGetLocal.build
+		Build\Local\ReleaseLabels.build = Build\Local\ReleaseLabels.build
+		Build\Local\TestAssemblies.nunit = Build\Local\TestAssemblies.nunit
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CCF4597-FEEF-468C-B9D9-45983E9238AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CCF4597-FEEF-468C-B9D9-45983E9238AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CCF4597-FEEF-468C-B9D9-45983E9238AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CCF4597-FEEF-468C-B9D9-45983E9238AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B2C19D8F-8EC4-447D-AFA7-A41ED502A861} = {C208D28A-DF6B-4F08-A7A3-C43189484A74}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>RaspberryPi.GPIO</title>
+    <authors>Bruno A. dos Santos, Michael Glasgow</authors>
+    <owners>Bruno A. dos Santos, Michael Glasgow</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The purpose of this library is to provide a Mono.NET interface to the GPIO pins on the Raspberry Pi. All of this code was written using Visual Studio 2010 Express but the goal is to be fully compatible with Mono. This library is written using .NET 4.0 therefore the latest version of Mono (2.10) is recommended. At the time of this update, the Raspbian wheezy 2012-07-15 image installs Mono 2.10.8.1.</description>
+    <releaseNotes>First release as a nuget package.</releaseNotes>
+    <copyright>Csopyright 2015</copyright>
+    <tags>Raspberry Pi GPIO</tags>
+  </metadata>
+</package>

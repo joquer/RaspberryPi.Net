@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestDatabaseConnection>
+  <ConnectionString value="Data Source=localhost;database=CPM.CSV_Test_0;integrated security=True;MultipleActiveResultSets=true;" />
+</TestDatabaseConnection>
