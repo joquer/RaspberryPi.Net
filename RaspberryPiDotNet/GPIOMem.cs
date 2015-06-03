@@ -88,7 +88,7 @@ namespace RaspberryPiDotNet
 				if (PinDirection != (base.PinDirection = value)) // Left to right eval ensures base class gets to check for disposed object access
 				{
 					// Set the direction on the pin
-					bcm2835_gpio_fsel(_pin, value == GPIODirection.Out);
+					bcm2835_gpio_fsel(_pin, Convert.ToInt32(value == GPIODirection.Out));
                     if (value == GPIODirection.In)
                         Resistor = GPIOResistor.OFF;
 				}
@@ -106,7 +106,7 @@ namespace RaspberryPiDotNet
             set {
                 if (Resistor != (base.Resistor = value)) // Left to right eval ensures base class gets to check for disposed object access
                 {
-                    bcm2835_gpio_set_pud(_pin, (uint)value);
+                    bcm2835_gpio_set_pud(_pin, (int)value);
                 }
             }
         }
@@ -150,44 +150,53 @@ namespace RaspberryPiDotNet
             bcm2835_pwm_set_data((int)base.Channel, range);
         }
 
-		#endregion
+        #endregion
 
-		#region Imported functions
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_init")]
-		static extern bool bcm2835_init();
+        #region Imported functions
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_init")]
+	    static bool bcm2835_init()
+	    {
+	        return true;
+	    }
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_fsel")]
-		static extern void bcm2835_gpio_fsel(GPIOPins pin, int mode_out);
+////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_fsel")]
+	    static void bcm2835_gpio_fsel(GPIOPins pin, int mode_out)
+	    {
+	        
+	    }
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_write")]
-		static extern void bcm2835_gpio_write(GPIOPins pin, bool value);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_write")]
+	    static void bcm2835_gpio_write(GPIOPins pin, bool value)
+	    {
+	        
+	    }
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_lev")]
-		static extern bool bcm2835_gpio_lev(GPIOPins pin);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_lev")]
+        static extern bool bcm2835_gpio_lev(GPIOPins pin);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_set_pud")]
-		static extern void bcm2835_gpio_set_pud(GPIOPins pin, int pud);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_set_pud")]
+        static extern void bcm2835_gpio_set_pud(GPIOPins pin, int pud);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_set_multi")]
-		static extern void bcm2835_gpio_set_multi(GPIOPinMask mask);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_set_multi")]
+        static extern void bcm2835_gpio_set_multi(GPIOPinMask mask);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_clr_multi")]
-		static extern void bcm2835_gpio_clr_multi(GPIOPinMask mask);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_clr_multi")]
+        static extern void bcm2835_gpio_clr_multi(GPIOPinMask mask);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_write_multi")]
-		static extern void bcm2835_gpio_write_multi(GPIOPinMask mask, bool on);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_gpio_write_multi")]
+        static extern void bcm2835_gpio_write_multi(GPIOPinMask mask, bool on);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_clock")]
-		static extern void bcm2835_pwm_set_clock(int divisor);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_clock")]
+        static extern void bcm2835_pwm_set_clock(int divisor);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_mode")]
-		static extern void bcm2835_pwm_set_mode(int channel, int markspace, int enabled);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_mode")]
+        static extern void bcm2835_pwm_set_mode(int channel, int markspace, int enabled);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_range")]
-		static extern void bcm2835_pwm_set_range(int channel, int range);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_range")]
+        static extern void bcm2835_pwm_set_range(int channel, int range);
 
-		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_data")]
-		static extern void bcm2835_pwm_set_data(int channel, int data);
+        ////		[DllImport("libbcm2835.so", EntryPoint = "bcm2835_pwm_set_data")]
+        static extern void bcm2835_pwm_set_data(int channel, int data);
 
 		#endregion
 

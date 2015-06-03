@@ -16,12 +16,12 @@ namespace RaspberryPiDotNet.MicroLiquidCrystal
         private bool _showCursor;
         private bool _blinkCursor;
         private bool _visible = true;
-        private bool _autoScroll;
+////        private bool _autoScroll;
         private bool _backlight = true;
 
         private byte _numLines;
         private byte _numColumns;
-        private byte _currLine;
+////        private byte _currLine;
         private byte _displayFunction;
 
         #region LCD Flags
@@ -191,7 +191,7 @@ namespace RaspberryPiDotNet.MicroLiquidCrystal
             {
                 _displayFunction |= LCD_2LINE;
             }
-            _currLine = 0;
+            ////_currLine = 0;
             _numLines = lines;
             _numColumns = columns;
 

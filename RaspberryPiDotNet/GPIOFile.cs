@@ -2,10 +2,14 @@
 using System.Diagnostics;
 using System.IO;
 
+using RaspberryPiDotNet;
+
 // Author: Aaron Anderson <aanderson@netopia.ca>
 // Based on work done by x4m and britguy (http://www.raspberrypi.org/phpBB3/viewtopic.php?f=34&t=6720)
 namespace RaspberryPiDotNet
 {
+    using System;
+
     /// <summary>
     /// Raspberry Pi GPIO using the file-based access method.
     /// </summary>
@@ -60,36 +64,30 @@ namespace RaspberryPiDotNet
 			{
 				return base.PinDirection;
 			}
-			set
-			{
-				if (PinDirection != (base.PinDirection = value)) // Left to right eval ensures base class gets to check for disposed object access
-				{
-					if (!Directory.Exists(GPIO_PATH + "gpio" + (uint)_pin))
-						File.WriteAllText(GPIO_PATH + "export", ((uint)_pin).ToString());
+		    set
+		    {
+		        if (PinDirection != (base.PinDirection = value))
+		            // Left to right eval ensures base class gets to check for disposed object access
+		        {
+		            Directory.Exists(GPIO_PATH + "gpio" + (uint)_pin);
+		            File.WriteAllText(GPIO_PATH + "export", ((uint)_pin).ToString());
 
-					// set i/o direction
-					File.WriteAllText(GPIO_PATH + "gpio" + (uint)_pin + "/direction", value.ToString().ToLower());
-				}
-			}
+		            // set i/o direction
+		            File.WriteAllText(GPIO_PATH + "gpio" + (uint)_pin + "/direction", value.ToString().ToLower());
+		        }
+		    }
 		}
 
 		#endregion
 
-        #region Class Methods
-        /// <summary>
-        /// Write a value to the pin
-        /// </summary>
-        /// <param name="value">The value to write to the pin</param>
+#region Class Methods
+
         public override void Write(bool value)
         {
 			base.Write(value);
 			File.WriteAllText(GPIO_PATH + "gpio" + (uint)_pin + "/value", value ? "1" : "0");
         }
 
-        /// <summary>
-        /// Read a value from the pin
-        /// </summary>
-        /// <returns>The value read from the pin</returns>
         public override bool Read()
         {
 			base.Read();
@@ -97,14 +95,11 @@ namespace RaspberryPiDotNet
 			return (readValue.Length > 0 && readValue[0] == '1');
         }
 
-        /// <summary>
-        /// Dispose of the GPIO pin
-        /// </summary>
         public override void Dispose()
         {
             base.Dispose();
 			File.WriteAllText(GPIO_PATH + "unexport", ((uint)_pin).ToString());
         }
-        #endregion
+#endregion
     }
 }
