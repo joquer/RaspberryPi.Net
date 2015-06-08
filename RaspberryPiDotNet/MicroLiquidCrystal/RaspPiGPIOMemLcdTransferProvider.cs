@@ -89,9 +89,18 @@ namespace RaspberryPiDotNet.MicroLiquidCrystal
         {
             if (!_disposed)
             {
-                _rsPort.Dispose();
-                _rwPort.Dispose();
-                _enablePort.Dispose();
+                if (_rsPort != null)
+                {
+                    _rsPort.Dispose();
+                }
+                if (_rwPort != null)
+                {
+                    _rwPort.Dispose();                    
+                }
+                if (_enablePort != null)
+                {
+                    _enablePort.Dispose();
+                }
 
                 for (int i = 0; i < 8; i++)
                 {
