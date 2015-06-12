@@ -4,7 +4,9 @@ using System.Collections.Generic;
 // Author: Aaron Anderson <aanderson@netopia.ca>
 namespace RaspberryPiDotNet
 {
-	/// <summary>
+    using System.Diagnostics;
+
+    /// <summary>
 	/// Abstract class for the GPIO connector on the Pi (P1) (as found next to the yellow RCA video socket on the Rpi circuit board)
 	/// </summary>
 	public abstract class GPIO : IDisposable
@@ -272,10 +274,16 @@ namespace RaspberryPiDotNet
 		/// Dispose of the GPIO pin
 		/// </summary>
 		public virtual void Dispose() {
-			if (_disposed)
-				throw new ObjectDisposedException(string.Empty);
+		    if (_disposed)
+		    {
+#if DEBUG
+            Debug.WriteLine(string.Format("ERROR:  GPIO Object of type {0} alread disposed", this.GetType().Name));
+#else
+            throw new ObjectDisposedException(string.Empty);
+#endif
+            }
 
-			_disposed = true;
+            _disposed = true;
 			lock (_exportedPins) {
 				_exportedPins.Remove(_pin);
 			}
