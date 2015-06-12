@@ -23,7 +23,8 @@
             //lcd.Begin(16, 2);
             //lcd.Clear();
             //lcd.SetCursorPosition(0, 0);
-            //lcd.Write("Hello World!"); Debug.WriteLine("RaspberryPi.Sensor Exiting...");
+            //lcd.Write("Hello World!");
+            Debug.WriteLine("RaspberryPi.Sensor Exiting...");
         }
     }
 }
